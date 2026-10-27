@@ -1,0 +1,17 @@
+# =====================================================================
+#  /etc/systemd/system/jjonglive.service (WEB1, WEB2)
+#  1분짜리 영상을 무한 반복하면서 2초짜리 HLS 조각으로 잘라 /var/www/hls 에 저장
+#  → Apache 가 https://www.jjongmarket.kr/hls/ 로 내보낸다
+# =====================================================================
+[Unit]
+Description=JJONG LIVE - loop broadcast (HLS)
+After=network.target
+
+[Service]
+ExecStartPre=/bin/mkdir -p /var/www/hls
+ExecStart=/usr/bin/ffmpeg -nostdin -loglevel warning -re -stream_loop -1 -i /opt/jjonglive/jjonglive.mp4 -c copy -f hls -hls_time 2 -hls_list_size 5 -hls_flags delete_segments+omit_endlist /var/www/hls/stream.m3u8
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

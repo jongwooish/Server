@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>쫑라이브 영상 원본</title>
+<!--
+  쫑라이브 1분 영상 원본 (1280x720)
+  render(t) 로 t초의 화면을 그린다. make_video.py 가 프레임마다 호출해서 캡처 → ffmpeg 로 mp4.
+  0초와 60초 화면이 같아서 무한 반복해도 끊김이 없다.
+-->
+<style>
+  :root { --y:#ffc61a; --y2:#ffd84d; --ink:#1f1f1f; --red:#e03131; --blue:#1c6fd1; --muted:#6b7785; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  html,body { width:1280px; height:720px; overflow:hidden; background:#000; }
+  body { font-family:"Noto Sans CJK KR","Noto Sans KR",sans-serif; color:var(--ink); }
+  #stage { position:relative; width:1280px; height:720px; overflow:hidden;
+           background:radial-gradient(circle at 20% 15%, #fff7cf 0, transparent 40%),
+                      radial-gradient(circle at 90% 90%, #ffe7a3 0, transparent 45%),
+                      linear-gradient(135deg,#fffaf0,#fff1c4); }
+  .abs { position:absolute; }
+  .emoji { font-family:"Noto Color Emoji",sans-serif; }
+
+  /* 상단 바 */
+  #topbar { left:28px; top:24px; display:flex; gap:12px; align-items:center; z-index:20; }
+  .live { background:var(--red); color:#fff; font-weight:900; font-size:22px; padding:6px 16px; border-radius:8px; letter-spacing:1px; display:flex; align-items:center; gap:8px; }
+  .live i { width:12px; height:12px; border-radius:50%; background:#fff; display:inline-block; }
+  .viewers { background:rgba(0,0,0,.65); color:#fff; font-size:20px; font-weight:700; padding:6px 14px; border-radius:8px; }
+  #brand { right:30px; top:22px; font-size:30px; font-weight:900; letter-spacing:-1px; z-index:20;
+           background:linear-gradient(transparent 58%, var(--y) 58%); padding:0 6px; }
+
+  /* 하단 자막 띠 */
+  #ticker { left:0; bottom:0; width:1280px; height:48px; background:var(--ink); color:#fff; z-index:20; overflow:hidden; }
+  #tickerTrack { position:absolute; top:0; height:48px; line-height:48px; white-space:nowrap; font-size:20px; font-weight:700; }
+  #tickerTrack b { color:var(--y); }
+
+  /* 인트로 / 아웃트로 */
+  #intro { left:0; top:0; width:1280px; height:720px; }
+  #logoBig { left:110px; top:190px; }
+  #logoBig .kicker { font-size:30px; font-weight:800; color:var(--red); letter-spacing:2px; }
+  #logoBig h1 { font-size:132px; font-weight:900; letter-spacing:-6px; line-height:1.05;
+                background:linear-gradient(transparent 62%, var(--y) 62%); display:inline-block; padding:0 10px; }
+  #logoBig p { font-size:40px; font-weight:800; margin-top:18px; }
+
+  /* 상품 장면 */
+  #prod { left:0; top:0; width:1280px; height:720px; }
+  #pcard { left:70px; top:120px; width:420px; height:420px; border-radius:28px; overflow:hidden; box-shadow:0 24px 50px rgba(0,0,0,.18); }
+  #pcard .bg { position:absolute; inset:0; }
+  #pcard .glow { position:absolute; left:50%; top:44%; width:380px; height:380px; transform:translate(-50%,-50%); border-radius:50%;
+                 background:radial-gradient(circle, rgba(255,255,255,.9) 0, rgba(255,255,255,0) 70%); }
+  #pcard .shadow { position:absolute; left:50%; bottom:58px; width:220px; height:30px; transform:translateX(-50%); border-radius:50%; background:rgba(0,0,0,.09); }
+  #pcard .ic { position:absolute; left:0; width:420px; text-align:center; font-size:200px; line-height:1; }
+  #pcard .tag { position:absolute; left:20px; top:20px; background:var(--ink); color:var(--y); font-weight:900; font-size:22px; padding:6px 14px; border-radius:20px; }
+  #info { left:520px; top:118px; width:400px; }
+  #info .cat { display:inline-block; background:#fff; border:2px solid var(--ink); border-radius:20px; padding:2px 14px; font-size:20px; font-weight:800; }
+  #info h2 { font-size:42px; line-height:1.18; letter-spacing:-1.5px; margin:14px 0 8px; font-weight:900; }
+  #info .rate { font-size:22px; color:var(--muted); font-weight:700; }
+  #info .rate s { text-decoration:none; color:#f59f00; letter-spacing:-2px; }
+  #info .orig { font-size:28px; color:#9aa3ad; text-decoration:line-through; font-weight:700; margin-top:22px; }
+  #info .priceRow { display:flex; align-items:center; gap:14px; white-space:nowrap; }
+  #info .dc { background:var(--red); color:#fff; font-size:38px; font-weight:900; padding:2px 14px; border-radius:10px; }
+  #info .sale { font-size:58px; font-weight:900; color:var(--red); letter-spacing:-2px; }
+  #info .ship { display:inline-block; margin-top:14px; background:#e7f0ff; color:var(--blue); font-size:22px; font-weight:800; padding:6px 14px; border-radius:8px; }
+  #info .stock { margin-top:18px; font-size:20px; font-weight:800; }
+  #info .bar { margin-top:6px; width:380px; height:14px; background:#ffe8a3; border-radius:7px; overflow:hidden; }
+  #info .bar i { display:block; height:100%; background:linear-gradient(90deg,#ff922b,var(--red)); }
+
+  /* 정리 장면 */
+  #recap { left:0; top:0; width:1280px; height:720px; }
+  #recap h2 { position:absolute; left:70px; top:96px; font-size:46px; font-weight:900; letter-spacing:-1.5px; }
+  .rcard { position:absolute; top:184px; width:200px; height:316px; background:#fff; border-radius:20px; overflow:hidden; box-shadow:0 14px 30px rgba(0,0,0,.12); }
+  .rcard .img { height:180px; display:flex; align-items:center; justify-content:center; font-size:100px; }
+  .rcard .t { padding:10px 14px 0; font-size:18px; font-weight:800; line-height:1.25; height:52px; overflow:hidden; }
+  .rcard .d { padding:4px 14px 0; font-size:16px; color:var(--red); font-weight:900; }
+  .rcard .p { padding:0 14px; font-size:26px; font-weight:900; }
+  #cta { left:70px; top:530px; background:var(--ink); color:var(--y); font-size:30px; font-weight:900; padding:12px 26px; border-radius:14px; }
+
+  /* 쇼호스트 삐요 */
+  #host { left:930px; top:250px; width:320px; height:400px; z-index:10; }
+  #bubble { left:880px; top:100px; width:370px; min-height:120px; background:#fff; border:4px solid var(--ink); border-radius:26px;
+            padding:18px 22px; font-size:27px; font-weight:800; line-height:1.35; z-index:11; letter-spacing:-.5px; }
+  #bubble::after { content:""; position:absolute; right:150px; bottom:-26px; border:13px solid transparent; border-top-color:var(--ink); }
+  #bubble .name { font-size:16px; color:var(--muted); font-weight:900; letter-spacing:1px; margin-bottom:4px; }
+  #bubble .caret { display:inline-block; width:3px; height:28px; background:var(--ink); vertical-align:-4px; margin-left:2px; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <!-- 인트로 / 아웃트로 -->
+  <div id="intro" class="abs">
+    <div id="logoBig" class="abs">
+      <div class="kicker">● JJONG LIVE COMMERCE</div>
+      <h1>쫑라이브</h1>
+      <p id="introSub">오늘의 특가 생방송</p>
+    </div>
+  </div>
+
+  <!-- 상품 소개 -->
+  <div id="prod" class="abs">
+    <div id="pcard" class="abs">
+      <div class="bg"></div><div class="glow"></div><div class="shadow"></div>
+      <div class="ic emoji"></div>
+      <div class="tag"></div>
+    </div>
+    <div id="info" class="abs">
+      <span class="cat"></span>
+      <h2></h2>
+      <div class="rate"></div>
+      <div class="orig"></div>
+      <div class="priceRow"><span class="dc"></span><span class="sale"></span></div>
+      <div class="ship"></div>
+      <div class="stock"></div>
+      <div class="bar"><i></i></div>
+    </div>
+  </div>
+
+  <!-- 정리 -->
+  <div id="recap" class="abs">
+    <h2>오늘의 특가 한눈에 보기</h2>
+    <div id="cta" class="abs">👇 아래 상품 카드에서 바로 구매!</div>
+  </div>
+
+  <!-- 쇼호스트 삐요 -->
+  <div id="bubble" class="abs"><div class="name">쇼호스트 삐요</div><span id="bubbleText"></span><span class="caret" id="caret"></span></div>
+  <svg id="host" class="abs" viewBox="0 0 320 400">
+    <g id="hostBody">
+      <!-- 발 -->
+      <path d="M115 372 q-10 14 -26 14 h56 q-12 0 -18 -14z" fill="#f08c00"/>
+      <path d="M195 372 q-6 14 -18 14 h56 q-16 0 -26 -14z" fill="#f08c00"/>
+      <!-- 몸통 -->
+      <ellipse cx="160" cy="250" rx="130" ry="130" fill="#ffd43b" stroke="#1f1f1f" stroke-width="6"/>
+      <ellipse cx="160" cy="290" rx="78" ry="70" fill="#fff3bf"/>
+      <!-- 머리 깃털 -->
+      <path d="M150 124 q-8 -40 14 -54 q-2 26 14 40 q8 -22 30 -24 q-18 22 -14 42z" fill="#ffd43b" stroke="#1f1f1f" stroke-width="6" stroke-linejoin="round"/>
+      <!-- 헤드셋 밴드 -->
+      <path d="M52 220 q0 -110 108 -112 q108 2 108 112" fill="none" stroke="#1f1f1f" stroke-width="12" stroke-linecap="round"/>
+      <rect x="36" y="200" width="34" height="56" rx="14" fill="#1f1f1f"/>
+      <rect x="250" y="200" width="34" height="56" rx="14" fill="#1f1f1f"/>
+      <!-- 마이크 -->
+      <path d="M62 250 q20 52 70 54" fill="none" stroke="#1f1f1f" stroke-width="7" stroke-linecap="round"/>
+      <circle cx="136" cy="304" r="11" fill="#e03131"/>
+      <!-- 볼 -->
+      <ellipse cx="88" cy="240" rx="20" ry="13" fill="#ffa8a8" opacity=".8"/>
+      <ellipse cx="232" cy="240" rx="20" ry="13" fill="#ffa8a8" opacity=".8"/>
+      <!-- 눈 -->
+      <g id="eyes">
+        <g transform="translate(118 200)"><g class="eye"><ellipse rx="17" ry="21" fill="#fff" stroke="#1f1f1f" stroke-width="5"/><circle cx="3" cy="3" r="9" fill="#1f1f1f"/><circle cx="6" cy="-2" r="3" fill="#fff"/></g></g>
+        <g transform="translate(202 200)"><g class="eye"><ellipse rx="17" ry="21" fill="#fff" stroke="#1f1f1f" stroke-width="5"/><circle cx="3" cy="3" r="9" fill="#1f1f1f"/><circle cx="6" cy="-2" r="3" fill="#fff"/></g></g>
+      </g>
+      <!-- 부리 -->
+      <path d="M140 238 q20 -14 40 0 q-20 10 -40 0z" fill="#ff922b" stroke="#1f1f1f" stroke-width="4" stroke-linejoin="round"/>
+      <path id="beakLow" d="M144 242 q16 18 32 0z" fill="#e8590c" stroke="#1f1f1f" stroke-width="4" stroke-linejoin="round"/>
+      <!-- 날개 -->
+      <path d="M38 270 q-26 30 -6 64 q22 -8 30 -40z" fill="#fcc419" stroke="#1f1f1f" stroke-width="6" stroke-linejoin="round"/>
+      <g id="wingR"><path d="M282 270 q34 -6 40 -46 q-34 0 -48 26z" fill="#fcc419" stroke="#1f1f1f" stroke-width="6" stroke-linejoin="round"/></g>
+    </g>
+  </svg>
+
+  <!-- 상단 / 하단 -->
+  <div id="topbar" class="abs"><span class="live"><i id="liveDot"></i>LIVE</span><span class="viewers" id="viewers"></span></div>
+  <div id="brand" class="abs">쫑마켓</div>
+  <div id="ticker" class="abs"><div id="tickerTrack"></div></div>
+</div>
+
+<script>
+const D = 60;   // 영상 길이(초)
+const PRODUCTS = [
+  { tag:'특가 1/4', cat:'생활용품', icon:'🧹', name:'무선 핸디 청소기',        price:89000,  dc:45, stock:167, ship:'🚀 쫑배송 · 내일 도착 보장', rating:4.7, reviews:7818,
+    c:['#e9f8ef','#c8ecd6'], lines:['무선 핸디 청소기!\n정가는 89,000원인데요…', '오늘만 45% 할인!\n48,950원이에요 😍', '밤 12시 전에 주문하면\n내일 바로 도착 🚀'] },
+  { tag:'특가 2/4', cat:'스포츠', icon:'⛺', name:'원터치 텐트 3인용',        price:119000, dc:45, stock:200, ship:'🚀 쫑배송 · 내일 도착 보장', rating:4.3, reviews:6334,
+    c:['#e6f7f7','#bfe9e8'], lines:['캠핑 가실 분 주목!\n원터치 텐트 3인용', '펼치기만 하면 설치 끝!\n65,450원 ⛺', '재고 넉넉할 때\n얼른 담아 가세요'] },
+  { tag:'특가 3/4', cat:'식품', icon:'🥓', name:'한돈 삼겹살 구이용 1kg',   price:29900,  dc:40, stock:132, ship:'🚀 쫑배송 · 내일 도착 보장', rating:4.9, reviews:9234,
+    c:['#fff5df','#ffe2a8'], lines:['오늘 저녁은\n삼겹살 어떠세요? 🥓', '한돈 구이용 1kg\n17,940원!', '평점 4.9,\n리뷰 9천 개가 넘었어요'] },
+  { tag:'특가 4/4', cat:'전자기기', icon:'🖥️', name:'27인치 QHD IPS 모니터 Q27', price:329000, dc:38, stock:195, ship:'🚀 쫑배송 · 내일 도착 보장', rating:4.2, reviews:6446,
+    c:['#e7f0ff','#c9dcff'], lines:['마지막은\n27인치 QHD 모니터!', '무려 125,020원 할인\n203,980원 🖥️', '165Hz라 게임도\n업무도 쾌적해요'] },
+];
+const sale = p => Math.floor(p.price * (100 - p.dc) / 100 / 10) * 10;
+const won = n => n.toLocaleString('ko-KR') + '원';
+
+// 쇼호스트 대사 타임라인 [시작초, 끝초, 문장]
+const LINES = [
+  [0.3, 4.6, '안녕하세요!\n쫑라이브 쇼호스트 삐요예요 🐥'],
+  [5.0, 8.0, '오늘의 특가,\n지금 바로 시작할게요!'],
+];
+const P0 = 8.5, PLEN = 9.5;   // 상품 장면 시작, 상품 하나 길이
+PRODUCTS.forEach((p, i) => {
+  const s = P0 + i * PLEN;
+  LINES.push([s + 0.4, s + 3.2, p.lines[0]], [s + 3.4, s + 6.3, p.lines[1]], [s + 6.5, s + 9.2, p.lines[2]]);
+});
+const R0 = P0 + 4 * PLEN;      // 정리 장면 시작 = 46.5
+const O0 = 55.0;               // 아웃트로 시작
+LINES.push([R0 + 0.4, R0 + 4.0, '오늘 소개한 특가,\n한 번에 볼까요?'], [R0 + 4.2, O0 - 0.2, '아래 상품 카드에서\n바로 구매하세요! 👇'], [O0 + 0.2, 59.0, '쫑라이브는 계속됩니다.\n또 만나요! 👋']);
+
+const $ = s => document.querySelector(s);
+const clamp = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
+const ease = x => 1 - Math.pow(1 - clamp(x), 3);
+const pop = x => { x = clamp(x); return x < 0.6 ? ease(x / 0.6) * 1.15 : 1.15 - 0.15 * ease((x - 0.6) / 0.4); };
+
+// 하단 띠 — 60초에 정확히 2바퀴 돌아서 이음새가 안 보이게
+const TICK = '<b>🚀 밤 12시 전 주문 시 내일 도착</b> &nbsp;·&nbsp; 🏅 쫑클럽 회원 무료배송 + 추가 5% 할인 &nbsp;·&nbsp; <b>⏰ 오늘의 특가 최대 45%</b> &nbsp;·&nbsp; 📦 쫑마켓 www.jjongmarket.kr &nbsp;·&nbsp; 실습용 가상 쇼핑몰입니다 &nbsp;&nbsp;&nbsp;&nbsp;';
+$('#tickerTrack').innerHTML = TICK + TICK + TICK + TICK;
+const tickW = $('#tickerTrack').scrollWidth / 4;
+
+// 정리 카드 만들기
+PRODUCTS.forEach((p, i) => {
+  const d = document.createElement('div');
+  d.className = 'rcard'; d.style.left = (70 + i * 216) + 'px';
+  d.innerHTML = `<div class="img emoji" style="background:linear-gradient(135deg,${p.c[0]},${p.c[1]})">${p.icon}</div>
+                 <div class="t">${p.name}</div><div class="d">${p.dc}% 할인</div><div class="p">${won(sale(p))}</div>`;
+  $('#recap').appendChild(d);
+});
+
+function setBubble(t) {
+  const L = LINES.find(([a, b]) => t >= a && t < b);
+  if (!L) { $('#bubbleText').innerHTML = ''; return false; }
+  const [a, b, text] = L;
+  const n = Math.floor((t - a) * 16);            // 초당 16글자
+  const shown = [...text].slice(0, n).join('');
+  $('#bubbleText').innerHTML = shown.replace(/\n/g, '<br>');
+  return n < [...text].length;                    // 아직 말하는 중?
+}
+
+function render(t) {
+  t = ((t % D) + D) % D;
+
+  // 상단 공통
+  $('#liveDot').style.opacity = (Math.sin(t * Math.PI * 2) > -0.3) ? 1 : 0.25;
+  const v = 1280 + Math.round(180 * Math.sin(2 * Math.PI * t / D) + 45 * Math.sin(2 * Math.PI * 5 * t / D));
+  $('#viewers').textContent = '👀 ' + v.toLocaleString() + '명 시청 중';
+  $('#tickerTrack').style.left = (-(t / D) * 2 * tickW) % tickW + 'px';
+
+  // 장면 투명도
+  const inIntro = t < P0 ? 1 - clamp((t - (P0 - 0.5)) / 0.5) : (t >= O0 ? clamp((t - O0) / 0.6) : 0);
+  $('#intro').style.opacity = inIntro;
+  $('#introSub').style.opacity = 1;
+
+  // 상품
+  const k = Math.floor((t - P0) / PLEN);
+  if (t >= P0 && k < 4) {
+    const p = PRODUCTS[k], lt = t - P0 - k * PLEN;
+    const fadeIn = ease(lt / 0.6), fadeOut = 1 - clamp((lt - (PLEN - 0.4)) / 0.4);
+    $('#prod').style.opacity = Math.min(fadeIn, fadeOut);
+    $('#pcard').style.transform = `translateX(${(1 - fadeIn) * -120}px) rotate(${(1 - fadeIn) * -6}deg)`;
+    $('#info').style.transform = `translateX(${(1 - fadeIn) * 80}px)`;
+    $('#pcard .bg').style.background = `linear-gradient(135deg,${p.c[0]},${p.c[1]})`;
+    $('#pcard .ic').textContent = p.icon;
+    $('#pcard .ic').style.top = (110 + Math.sin(t * 2.4) * 10) + 'px';
+    $('#pcard .tag').textContent = p.tag;
+    $('#info .cat').textContent = p.cat;
+    $('#info h2').textContent = p.name;
+    $('#info .rate').innerHTML = `<s>${'★'.repeat(Math.round(p.rating))}</s> ${p.rating} · 리뷰 ${p.reviews.toLocaleString()}개`;
+    $('#info .orig').textContent = won(p.price);
+    const dcT = lt - 3.4;
+    $('#info .dc').textContent = p.dc + '%';
+    $('#info .dc').style.transform = `scale(${pop(dcT / 0.6)})`;
+    const cnt = ease((lt - 3.6) / 1.4);
+    $('#info .sale').textContent = won(Math.round((p.price - (p.price - sale(p)) * cnt) / 10) * 10);
+    $('#info .ship').textContent = p.ship;
+    $('#info .ship').style.opacity = clamp((lt - 6.5) / 0.4);
+    const left = p.stock - Math.floor(clamp(lt / PLEN) * 7);
+    $('#info .stock').textContent = `🔥 남은 수량 ${left}개 · 지금 ${Math.round(18 + 9 * Math.sin(t))}명이 보고 있어요`;
+    $('#info .bar i').style.width = Math.max(8, 100 * left / (p.stock + 40)) + '%';
+  } else {
+    $('#prod').style.opacity = 0;
+  }
+
+  // 정리
+  const rIn = t >= R0 && t < O0 ? Math.min(ease((t - R0) / 0.6), 1 - clamp((t - (O0 - 0.4)) / 0.4)) : 0;
+  $('#recap').style.opacity = rIn;
+  document.querySelectorAll('.rcard').forEach((c, i) => {
+    const e = ease((t - R0 - 0.3 - i * 0.25) / 0.5);
+    c.style.transform = `translateY(${(1 - e) * 60}px)`; c.style.opacity = e;
+  });
+  $('#cta').style.transform = `scale(${1 + 0.04 * Math.sin(t * 6)})`;
+
+  // 쇼호스트
+  const talking = setBubble(t);
+  $('#caret').style.opacity = (talking || Math.floor(t * 2) % 2 === 0) && $('#bubbleText').textContent ? 1 : 0;
+  $('#bubble').style.opacity = $('#bubbleText').textContent ? 1 : 0.0;
+  $('#hostBody').setAttribute('transform', `translate(0 ${Math.sin(2 * Math.PI * 29 * t / D) * 6})`);
+  const mouth = talking ? (Math.sin(t * 28) > 0 ? 1 : 0.2) : 0;
+  $('#beakLow').setAttribute('transform', `translate(0 ${mouth * 9})`);
+  const blink = (t % 3.0) > 2.87;
+  document.querySelectorAll('.eye').forEach(e => e.setAttribute('transform', `scale(1 ${blink ? 0.12 : 1})`));
+  const wave = (t >= P0 && t < O0) ? -25 + 18 * Math.sin(t * 5) : 10 * Math.sin(2 * Math.PI * 40 * t / D);
+  $('#wingR').setAttribute('transform', `rotate(${wave} 282 270)`);
+}
+window.render = render;
+render(0);
+</script>
+</body>
+</html>
