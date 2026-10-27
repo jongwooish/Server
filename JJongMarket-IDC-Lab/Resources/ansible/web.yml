@@ -1,0 +1,86 @@
+# =====================================================================
+#  web.yml - WEB1, WEB2
+#  keeps both web servers identical: shop files, permissions, Apache site,
+#  health page, JJONG LIVE service. One server at a time (serial: 1)
+#  so the VIP always has a live server.
+# =====================================================================
+- name: Web servers
+  hosts: web
+  serial: 1
+  vars:
+    web_root: /var/www/jjongmarket
+  tasks:
+    - name: Packages installed (check only - no internet)
+      command: dpkg-query -W -f='${Status}' {{ item }}
+      loop: [apache2, libapache2-mod-php, php-mysql, php-mbstring, keepalived, ffmpeg]
+      register: pkg
+      changed_when: false
+      failed_when: "'install ok installed' not in pkg.stdout"
+
+    - name: Required files exist (certificate, key, live video)
+      stat: { path: "{{ item }}" }
+      loop:
+        - /etc/ssl/www.crt
+        - /etc/ssl/www.key
+        - /opt/jjonglive/jjonglive.mp4
+      register: need
+      failed_when: not need.stat.exists
+
+    # ---------- shop files ----------
+    - name: Web directories readable (755)
+      file: { path: "{{ item }}", state: directory, mode: "0755" }
+      loop: ["{{ web_root }}", "{{ web_root }}/inc", "{{ web_root }}/css", "{{ web_root }}/js"]
+
+    - name: Shop files (files/web -> web root, 644)
+      copy: { src: web/, dest: "{{ web_root }}/", mode: "0644", directory_mode: "0755" }
+
+    - name: Health page shows this server's name
+      copy: { dest: "{{ web_root }}/health.html", content: "{{ ansible_hostname }}\n", mode: "0644" }
+
+    # ---------- Apache ----------
+    - name: Apache modules ssl, rewrite, headers
+      command: a2enmod {{ item }}
+      args: { creates: "/etc/apache2/mods-enabled/{{ item }}.load" }
+      loop: [ssl, rewrite, headers]
+      notify: restart apache
+
+    - name: Site config (HTTPS, /hls/)
+      copy: { src: jjongmarket.conf, dest: /etc/apache2/sites-available/jjongmarket.conf, mode: "0644" }
+      notify: reload apache
+
+    - name: Enable shop site
+      command: a2ensite jjongmarket
+      args: { creates: /etc/apache2/sites-enabled/jjongmarket.conf }
+      notify: reload apache
+
+    - name: Disable default site
+      command: a2dissite 000-default
+      args: { removes: /etc/apache2/sites-enabled/000-default.conf }
+      notify: reload apache
+
+    # ---------- JJONG LIVE ----------
+    - name: Live service unit
+      copy: { src: jjonglive.service, dest: /etc/systemd/system/jjonglive.service, mode: "0644" }
+      notify: restart jjonglive
+
+    - name: Services running and enabled at boot
+      systemd: { name: "{{ item }}", state: started, enabled: true, daemon_reload: true }
+      loop: [apache2, keepalived, jjonglive]
+
+  handlers:
+    - name: Apache config test
+      command: apache2ctl configtest
+      changed_when: false
+      listen: [reload apache, restart apache]
+
+    - name: Reload Apache
+      service: { name: apache2, state: reloaded }
+      listen: reload apache
+
+    - name: Restart Apache
+      service: { name: apache2, state: restarted }
+      listen: restart apache
+
+    - name: Restart live
+      systemd: { name: jjonglive, state: restarted, daemon_reload: true }
+      listen: restart jjonglive

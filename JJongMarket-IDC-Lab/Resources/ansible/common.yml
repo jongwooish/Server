@@ -1,0 +1,36 @@
+# =====================================================================
+#  common.yml - every CLI server (FW, DNS, WEB1, WEB2, DB, MGMT)
+#  time zone, login banner, Root CA trust, required services
+# =====================================================================
+- name: Common baseline
+  hosts: all
+  vars:
+    rootca: /etc/ssl/RootCA.crt          # on MGMT
+  tasks:
+    - name: Time zone Asia/Seoul
+      file: { src: /usr/share/zoneinfo/Asia/Seoul, dest: /etc/localtime, state: link, force: true }
+
+    - name: Login banner
+      copy:
+        dest: /etc/motd
+        content: "JJONG IDC | {{ inventory_hostname | upper }} | managed by Ansible\n"
+        mode: "0644"
+
+    - name: Trust JJONG Root CA
+      copy: { src: "{{ rootca }}", dest: /usr/local/share/ca-certificates/RootCA.crt, mode: "0644" }
+      notify: update ca
+
+    - name: Packages installed (check only - no internet)
+      command: dpkg-query -W -f='${Status}' {{ item }}
+      loop: [chrony, prometheus-node-exporter]
+      register: pkg
+      changed_when: false
+      failed_when: "'install ok installed' not in pkg.stdout"
+
+    - name: Services running and enabled at boot
+      service: { name: "{{ item }}", state: started, enabled: true }
+      loop: [chrony, prometheus-node-exporter]
+
+  handlers:
+    - name: update ca
+      command: update-ca-certificates
