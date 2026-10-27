@@ -1,0 +1,5 @@
+# /etc/mysql/mariadb.conf.d/60-jjong.cnf  (DB)
+[mysqld]
+bind-address         = 10.10.20.10
+character-set-server = utf8mb4
+collation-server     = utf8mb4_unicode_ci
