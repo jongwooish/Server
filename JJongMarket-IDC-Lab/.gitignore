@@ -1,0 +1,13 @@
+# secrets
+*.key
+*privatekey
+*.p12
+.vault_pass*
+ansible/vault.yml
+# backups, temp
+*.sql.gz
+*.swp
+.DS_Store
+# vendor binaries (download separately)
+*.deb
+hls.min.js
