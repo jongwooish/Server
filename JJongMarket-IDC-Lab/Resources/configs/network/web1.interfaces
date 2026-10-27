@@ -1,0 +1,5 @@
+# /etc/network/interfaces  (WEB1)
+auto ens33
+iface ens33 inet static
+        address 10.10.10.21/24
+        gateway 10.10.10.254

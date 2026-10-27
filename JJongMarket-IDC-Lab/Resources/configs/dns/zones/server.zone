@@ -1,0 +1,14 @@
+; /var/cache/bind/server.zone  10.10.10.0/24
+$TTL    604800
+@   IN  SOA  ns.jjong.internal. admin.jjong.internal. (
+            2026101501  ; serial
+            3600        ; refresh
+            900         ; retry
+            604800      ; expire
+            300 )       ; negative cache TTL
+@    IN  NS   ns.jjong.internal.
+10   IN  PTR  dns.jjong.internal.
+21   IN  PTR  web1.jjong.internal.
+22   IN  PTR  web2.jjong.internal.
+100  IN  PTR  web.jjong.internal.
+254  IN  PTR  fw.jjong.internal.

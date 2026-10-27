@@ -1,0 +1,10 @@
+// /etc/bind/named.conf.options  (DNS)
+options {
+        directory "/var/cache/bind";
+        listen-on { any; };
+        listen-on-v6 { none; };
+        allow-query { any; };
+        recursion no;              // closed network: answer own zones only
+        dnssec-validation no;
+        version none;
+};

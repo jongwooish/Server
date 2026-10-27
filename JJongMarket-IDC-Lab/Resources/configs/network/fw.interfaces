@@ -1,0 +1,16 @@
+# /etc/network/interfaces  (FW)  - one NIC per VMnet, .254 = gateway of each zone
+auto ens33
+iface ens33 inet static
+        address 203.0.113.10/24
+
+auto ens37
+iface ens37 inet static
+        address 10.10.10.254/24
+
+auto ens38
+iface ens38 inet static
+        address 10.10.20.254/24
+
+auto ens39
+iface ens39 inet static
+        address 10.10.30.254/24

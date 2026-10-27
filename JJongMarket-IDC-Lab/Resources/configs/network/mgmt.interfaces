@@ -1,0 +1,5 @@
+# /etc/network/interfaces  (MGMT)
+auto ens33
+iface ens33 inet static
+        address 10.10.30.10/24
+        gateway 10.10.30.254

@@ -1,0 +1,10 @@
+; /var/cache/bind/jjong.internal.zone  (internal view)
+$TTL    604800
+@   IN  SOA  ns.jjong.internal. admin.jjong.internal. (
+            2026101501  ; serial
+            3600        ; refresh
+            900         ; retry
+            604800      ; expire
+            300 )       ; negative cache TTL
+@    IN  NS   ns.jjong.internal.
+ns   IN  A    10.10.10.10

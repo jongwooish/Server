@@ -1,0 +1,49 @@
+# 05. Nftables
+
+### [ FW ]
+
+```bash
+vim /etc/nftables.conf
+```
+
+```
+#!/usr/sbin/nft -f
+
+flush ruleset
+
+table inet filter {
+	chain input {
+		type filter hook input priority filter; policy drop;
+		ct state established, related accept
+		iif lo accept
+		ip protocol icmp accept
+		iifname ens33 udp dport { 67, 51820 } accept
+		iifname ens39 tcp dport { 22, 9100 } accept
+		iifname ens39 udp dport 67 accept
+	}
+	chain forward {
+		type filter hook forward priority filter; policy drop;
+		tcp flags syn tcp option maxseg size set rt mtu
+		ct state established, related accept
+		ip daddr 10.10.10.100 tcp dport { 80, 443 } accept
+		ip daddr 10.10.10.10 meta l4proto { tcp, udp } th dport 53 accept
+		ip daddr 10.10.10.10 udp dport 123 accept
+		ip saddr 10.10.10.0/24 ip daddr 10.10.20.10 tcp dport 3306 accept
+		ip saddr 10.8.0.0/24 ip daddr 10.10.30.0/24 tcp dport { 22, 443 } accept
+		iifname ens39 accept
+	}
+}
+
+table ip nat {
+	chain prerouting {
+		type nat hook prerouting priority dstnat;
+		iifname ens33 tcp dport { 80, 443 } dnat to 10.10.10.100
+		iifname ens33 meta l4proto { tcp, udp } th dport 53 dnat to 10.10.10.10
+	}
+}
+```
+
+```bash
+systemctl enable --now nftables
+systemctl restart nftables
+```

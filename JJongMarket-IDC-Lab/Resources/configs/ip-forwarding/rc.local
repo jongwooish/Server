@@ -1,0 +1,4 @@
+#!/bin/bash
+# /etc/rc.local  (FW)  chmod +x
+# re-apply /etc/sysctl.conf at every boot so forwarding survives a reboot
+sysctl -p

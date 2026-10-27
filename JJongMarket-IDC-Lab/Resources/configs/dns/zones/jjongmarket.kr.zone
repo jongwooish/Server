@@ -1,0 +1,13 @@
+; /var/cache/bind/jjongmarket.kr.zone  (internal view)
+$TTL    604800
+@   IN  SOA  ns.jjongmarket.kr. admin.jjongmarket.kr. (
+            2026101501  ; serial
+            3600        ; refresh
+            900         ; retry
+            604800      ; expire
+            300 )       ; negative cache TTL
+@    IN  NS   ns.jjongmarket.kr.
+ns   IN  A    10.10.10.10
+@    IN  A    10.10.10.100
+www  IN  A    10.10.10.100
+vpn  IN  A    203.0.113.10

@@ -1,0 +1,3 @@
+# /etc/ssh/sshd_config  - trust user keys signed by the JJONG SSH CA
+# /etc/ssl/ssh-CA is created on MGMT and copied to every server (/etc/ssl)
+TrustedUserCAKeys /etc/ssl/ssh-CA/ca.pub
