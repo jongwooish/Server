@@ -1,0 +1,16 @@
+# =====================================================================
+#  /etc/prometheus/blackbox.yml  (MGMT)
+#  http_2xx    : 주소를 열어 보고 200번대 응답이면 성공 (HTTPS 인증서도 검사)
+#  tcp_connect : 포트에 연결만 되면 성공
+# =====================================================================
+modules:
+  http_2xx:
+    prober: http
+    timeout: 5s
+    http:
+      preferred_ip_protocol: ip4
+  tcp_connect:
+    prober: tcp
+    timeout: 5s
+    tcp:
+      preferred_ip_protocol: ip4

@@ -1,0 +1,10 @@
+# /etc/grafana/provisioning/dashboards/jjong.yaml  (MGMT)
+# 이 폴더의 JSON 대시보드를 Grafana가 시작할 때 자동으로 불러온다.
+apiVersion: 1
+providers:
+  - name: jjong
+    folder: JJONG
+    type: file
+    disableDeletion: false
+    options:
+      path: /var/lib/grafana/dashboards

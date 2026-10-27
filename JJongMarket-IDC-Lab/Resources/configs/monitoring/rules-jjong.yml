@@ -1,0 +1,42 @@
+# =====================================================================
+#  /etc/prometheus/rules-jjong.yml  (MGMT) - alert rules
+#  check: http://10.10.30.10:9090/alerts
+# =====================================================================
+groups:
+  - name: jjong
+    rules:
+      - alert: HostDown
+        expr: up{job="node"} == 0
+        for: 1m
+        labels: { severity: critical }
+        annotations: { summary: "{{ $labels.host }} is down" }
+
+      - alert: ShopDown
+        expr: probe_success{job="shop"} == 0
+        for: 30s
+        labels: { severity: critical }
+        annotations: { summary: "Shop (www.jjongmarket.kr) is not responding" }
+
+      - alert: LiveDown
+        expr: probe_success{job="live"} == 0
+        for: 30s
+        labels: { severity: warning }
+        annotations: { summary: "JJONG LIVE stream stopped" }
+
+      - alert: MariaDBDown
+        expr: probe_success{job="mariadb"} == 0
+        for: 30s
+        labels: { severity: critical }
+        annotations: { summary: "MariaDB 10.10.20.10:3306 is not responding" }
+
+      - alert: HighCPU
+        expr: 100 - avg by (host) (rate(node_cpu_seconds_total{mode="idle"}[2m])) * 100 > 80
+        for: 2m
+        labels: { severity: warning }
+        annotations: { summary: "{{ $labels.host }} CPU usage is high" }
+
+      - alert: DiskAlmostFull
+        expr: (1 - node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"}) * 100 > 85
+        for: 1m
+        labels: { severity: warning }
+        annotations: { summary: "{{ $labels.host }} disk usage over 85%" }
