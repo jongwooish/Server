@@ -1,3 +1,0 @@
-# ansible-playbook /etc/ansible/site.yml
-- import_playbook: common.yml
-- import_playbook: web.yml

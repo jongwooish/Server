@@ -1,2 +1,0 @@
-# /etc/cron.d/mariadb-backup  (DB)
-0 3 * * * root /usr/local/sbin/mariadb-backup.sh
