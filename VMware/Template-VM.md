@@ -1,5 +1,7 @@
 # VMware Template VM
 
+[한국어](../i18n/ko/VMware/Template-VM.md) | **English** | [日本語](../i18n/ja/VMware/Template-VM.md) | [简体中文](../i18n/zh-CN/VMware/Template-VM.md) | [Español](../i18n/es/VMware/Template-VM.md) | [Français](../i18n/fr/VMware/Template-VM.md)
+
 When a lab or competition task needs many VMs, installing every OS by hand takes far too long. Instead, install one VM properly, turn it into a **Template VM**, and **clone** the rest from it.
 
 This page covers how to prepare the Template VM in VMware Workstation, how to clone from it, and what to fix inside each clone.
