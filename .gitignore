@@ -1,0 +1,40 @@
+
+# ── Private keys & certificates (never upload) ────────────
+*.key
+*.pem
+*.p12
+*.pfx
+*.jks
+*.keystore
+*.ppk
+*.gpg
+*.asc
+*.kdbx
+*privatekey*
+id_rsa*
+id_dsa*
+id_ecdsa*
+id_ed25519*
+known_hosts
+authorized_keys
+
+# ── Passwords, tokens, env files ──────────────────────────
+.env
+.env.*
+*.secret
+*credentials*
+*password*
+.vault_pass*
+
+# ── Local PC / VM files ───────────────────────────────────
+*.vmx
+*.vmxf
+*.vmdk
+*.vmsd
+*.vmsn
+*.vmem
+*.nvram
+*.log
+.DS_Store
+Thumbs.db
+desktop.ini
