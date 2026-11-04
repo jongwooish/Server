@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 400" font-family="Segoe UI, Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0 L10 5 L0 10 z" fill="#718096"/>
+    </marker>
+    <g id="vm">
+      <rect x="-52" y="-26" width="104" height="52" rx="8" fill="#ffffff" stroke="#2b6cb0" stroke-width="2"/>
+      <rect x="-42" y="-16" width="20" height="14" rx="2" fill="#2b6cb0"/>
+      <rect x="-42" y="2" width="20" height="4" rx="1" fill="#2b6cb0"/>
+    </g>
+  </defs>
+  <rect width="860" height="400" fill="#ffffff"/>
+  <text x="430" y="32" text-anchor="middle" font-size="19" font-weight="700" fill="#1a202c">Template VM → Snapshot → Clones</text>
+
+  <!-- template -->
+  <rect x="40" y="150" width="170" height="90" rx="10" fill="#ebf8ff" stroke="#2b6cb0" stroke-width="2.5"/>
+  <text x="125" y="182" text-anchor="middle" font-size="15" font-weight="700" fill="#1a202c">Template VM</text>
+  <text x="125" y="204" text-anchor="middle" font-size="12" fill="#4a5568">OS + common packages</text>
+  <text x="125" y="224" text-anchor="middle" font-size="12" fill="#c05621">Template mode ON</text>
+
+  <!-- snapshot -->
+  <circle cx="320" cy="195" r="38" fill="#fffaf0" stroke="#dd6b20" stroke-width="2.5"/>
+  <text x="320" y="191" text-anchor="middle" font-size="13" font-weight="700" fill="#1a202c">Snapshot</text>
+  <text x="320" y="209" text-anchor="middle" font-size="12" fill="#c05621">"Template"</text>
+  <line x1="210" y1="195" x2="280" y2="195" stroke="#718096" stroke-width="2.5" marker-end="url(#arr)"/>
+  <text x="245" y="182" text-anchor="middle" font-size="11" fill="#718096">powered off</text>
+
+  <!-- linked clones -->
+  <rect x="430" y="58" width="390" height="190" rx="10" fill="#f0fff4" stroke="#38a169" stroke-dasharray="6 4"/>
+  <text x="445" y="80" font-size="13" font-weight="700" fill="#2f855a">Linked clones — share the template disk</text>
+  <use href="#vm" x="505" y="130"/><text x="518" y="135" font-size="13" font-weight="600" fill="#1a202c">FW</text>
+  <use href="#vm" x="625" y="130"/><text x="638" y="135" font-size="13" font-weight="600" fill="#1a202c">DNS</text>
+  <use href="#vm" x="745" y="130"/><text x="758" y="135" font-size="13" font-weight="600" fill="#1a202c">WEB1</text>
+  <text x="625" y="190" text-anchor="middle" font-size="12" fill="#4a5568">created in seconds · very small on disk</text>
+  <text x="625" y="210" text-anchor="middle" font-size="12" fill="#c53030">break if the template or snapshot is deleted</text>
+  <text x="625" y="230" text-anchor="middle" font-size="12" fill="#4a5568">each gets a new MAC address and UUID</text>
+  <path d="M358 185 C 400 150, 420 130, 450 130" stroke="#38a169" stroke-width="2.5" fill="none" marker-end="url(#arr)"/>
+
+  <!-- full clone -->
+  <rect x="430" y="268" width="390" height="110" rx="10" fill="#faf5ff" stroke="#805ad5" stroke-dasharray="6 4"/>
+  <text x="445" y="290" font-size="13" font-weight="700" fill="#6b46c1">Full clone — independent copy</text>
+  <use href="#vm" x="505" y="332"/><text x="518" y="337" font-size="13" font-weight="600" fill="#1a202c">DB</text>
+  <text x="700" y="326" text-anchor="middle" font-size="12" fill="#4a5568">copies the whole disk (minutes)</text>
+  <text x="700" y="346" text-anchor="middle" font-size="12" fill="#4a5568">keeps working without the template</text>
+  <path d="M358 205 C 400 260, 420 332, 450 332" stroke="#805ad5" stroke-width="2.5" fill="none" marker-end="url(#arr)"/>
+</svg>
