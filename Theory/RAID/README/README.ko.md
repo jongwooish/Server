@@ -4,7 +4,7 @@
 
 ![Windows](https://img.shields.io/badge/Windows-Disk_Management-0078D4?logo=windows&logoColor=white)
 
-RAID의 개념, 컨트롤러와 캐시, RAID 레벨을 정리하고, Windows **디스크 관리**에서 스팬·스트라이프·미러·RAID-5 볼륨을 직접 만들어 디스크 장애와 복구까지 실습합니다.
+RAID의 개념, 레이드 컨트롤러와 캐시, RAID 레벨을 정리하고, Windows **디스크 관리**에서 스팬·스트라이프·미러·RAID-5 볼륨을 직접 만들어 디스크 장애와 복구까지 실습합니다.
 
 ## 목차
 
