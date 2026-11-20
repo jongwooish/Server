@@ -7,3 +7,4 @@
 | 主题 | 说明 |
 | --- | --- |
 | [RAID](../RAID/README/README.zh-CN.md) | RAID 概念、控制器与缓存、RAID 级别、Windows 动态磁盘实验(故障与恢复) |
+| [Active Directory](../Active-Directory/README/README.zh-CN.md) | Active Directory 理论：SSO、组件、DC、DNS、组（AGDLP）、复制与站点、组策略 |

@@ -7,3 +7,4 @@ Notas teóricas: conceptos básicos de servidores y almacenamiento.
 | Tema | Descripción |
 | --- | --- |
 | [RAID](../RAID/README/README.es.md) | Concepto de RAID, controladoras y caché, niveles RAID y laboratorio con discos dinámicos de Windows (fallo y recuperación) |
+| [Active Directory](../Active-Directory/README/README.es.md) | Teoría de Active Directory: SSO, componentes, DC, DNS, grupos (AGDLP), replicación y sitios, directiva de grupo |

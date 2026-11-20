@@ -7,3 +7,4 @@ Notes théoriques : les concepts de base des serveurs et du stockage.
 | Sujet | Description |
 | --- | --- |
 | [RAID](../RAID/README/README.fr.md) | Concept du RAID, contrôleurs et cache, niveaux RAID et lab avec les disques dynamiques Windows (panne et récupération) |
+| [Active Directory](../Active-Directory/README/README.fr.md) | Théorie d'Active Directory : SSO, composants, DC, DNS, groupes (AGDLP), réplication et sites, stratégie de groupe |

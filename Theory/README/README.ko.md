@@ -7,3 +7,4 @@
 | 주제 | 설명 |
 | --- | --- |
 | [RAID](../RAID/README/README.ko.md) | RAID 개념, 컨트롤러와 캐시, RAID 레벨, Windows 동적 디스크 실습(장애와 복구) |
+| [Active Directory](../Active-Directory/README/README.ko.md) | Active Directory 이론: SSO, 구성 요소, DC, DNS, 그룹(AGDLP), 복제와 사이트, 그룹 정책 |
